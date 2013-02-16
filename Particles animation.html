@@ -1,0 +1,107 @@
+<canvas id="pixel01" width="1000" height="1000" ></canvas>
+<script language="Javascript">
+	//hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
+	/*
+		float dir = atan2(x - mx, y - my) / PI * 180;
+		hspeed += -sin (dir*PI/180) / 30;
+		vspeed += -cos (dir*PI/180) / 30;
+		hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
+	*/
+
+	var canvas = document.getElementById('pixel01');
+	var c = canvas.getContext('2d');
+
+	var data = c.createImageData(1000,1000);
+
+	var dir = 0;
+	var mx = 500;
+	var my = 500;
+
+	var particle = new Array();
+	var mouseDown = false;
+
+	init();
+
+	function init() {
+		document.body.style.backgroundColor="#FFF";
+		for ( var i = 0; i < 7817; i++) {
+			particle.push([
+					[100+Math.floor(Math.random()*100), Math.floor(100+Math.random()*100)],[0,0]
+				]);
+		}
+		draws();
+	}
+
+	document.getElementById('pixel01').addEventListener('mousemove', mouseMove, false);
+	document.getElementById('pixel01').addEventListener('mousedown', mouseDownEvent, false);
+	document.getElementById('pixel01').addEventListener('mouseup', mouseUpEvent, false);
+
+	function generateData() {
+		for ( var n in particle) {
+			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 0);
+			newParticlePosition(particle[n][0][0], particle[n][0][1], n);
+			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 50, 50, 50, 255);
+		}
+	}
+
+	function newParticlePosition(x, y, n) {
+
+		var dir = Math.atan2(x - mx, y - my) / Math.PI * 180;
+
+		particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) / 30 ;
+		particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) / 30 ;
+		particle[n][0][0] += particle[n][1][0];
+		particle[n][0][1] += particle[n][1][1];
+
+		if ( mouseDown ) {
+			/*somethin*/
+		}
+	}
+
+	function setPixel(x, y, r, g, b, a) {
+		var pos = x + data.width * y;
+		pos *= 4;
+		data.data[pos] = r;
+		data.data[pos+1] = g; //force green to 0
+		data.data[pos+2] = b;
+		data.data[pos+3] = a; //force alpha to 100%
+	}
+
+	function getPixel(x, y) {
+		var pixel = [];
+		var pos = x + data.width * y;
+		pos *= 4;
+		pixel[0] = data.data[pos];
+		pixel[1] = data.data[pos + 1]; //force green to 0
+		pixel[2] = data.data[pos + 2];
+		pixel[3] = data.data[pos + 3]; //force alpha to 100%
+		return pixel;
+	}
+
+	function checkPixel(x, y) {
+		var pos = (x + data.width * y) * 4 + 3;
+		return data.data[pos] != 0;
+	}
+
+	function mouseDownEvent() {
+		mouseDown = true;
+	}
+
+	function mouseUpEvent() {
+		mouseDown = false;
+	}
+
+
+	function mouseMove(e) {
+		mx = e.clientX-35;
+		my = e.clientY-35;
+	}
+
+	function draws() {
+
+		generateData();
+		c.putImageData(data,25,25);
+		//c.clearRect(0, 0, canvas.width, canvas.height);
+		setTimeout( function() { draws() }, 1 );
+	}
+</script>
