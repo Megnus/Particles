@@ -1,4 +1,5 @@
 <canvas id="pixel01" width="1000" height="1000" ></canvas>
+<canvas id="Canvas" style="border:1px solid #000000;" height="800" width="1280">
 <script language="Javascript">
 	//hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
 	/*
@@ -20,27 +21,100 @@
 	var particle = new Array();
 	var mouseDown = false;
 
-	init();
+	//init();
+	window.onload = init;
+
+	/*function colorizeImage() {
+
+		var img = new ImageClass();
+
+	}
+
+	$(document).ready(function() {
+		colorizeImage();
+	});*/
+
+	function imageClass() {
+		this.img = new Image();
+		this.imgd;
+		this.getPixel = function(x, y) {
+			var pixel = [];
+			var pos = x + this.img.width * y;
+			pos *= 4;
+			pixel[0] = this.imgd.data[pos];
+			pixel[1] = this.imgd.data[pos + 1]; //force green to 0
+			pixel[2] = this.imgd.data[pos + 2];
+			pixel[3] = this.imgd.data[pos + 3]; //force alpha to 100%
+			return pixel;
+		}
+
+		this.setPixel = function(x, y, r, g, b, a) {
+			var pos = x + this.img.width * y;
+			pos *= 4;
+			this.imgd.data[pos] = r;
+			this.imgd.data[pos+1] = g; //force green to 0
+			this.imgd.data[pos+2] = b;
+			this.imgd.data[pos+3] = a; //force alpha to 100%
+		}
+
+		this.img.onload = imageLoaded(this);
+	}
+
+	function imageLoaded(self) {
+		var count = 0;
+		self.img.src = 'panagora.png';
+		var context = document.getElementById('Canvas').getContext('2d');
+		context.drawImage(self.img, 0, 0);
+		self.imgd = context.getImageData(0, 0, self.img.width, self.img.height);
+		var pix = self.imgd.data;
+		console.log(self.img.width, self.img.height);
+		for (var x = 0; x < self.img.width - 1; x++)
+			for (var y = 0; y < self.img.height - 1; y++){
+			//	console.log(img.getPixel(x,y));
+				//if (img.getPixel(x,y)[0] > 60 && img.getPixel(x,y)[0] < 255)
+				if (self.getPixel(x,y)[0] == 255)
+					particle.push([
+						[x, y],[Math.random()*0,Math.random()*1]
+						]);
+					//self.setPixel(x,y,self.getPixel(x,y)[0]*0,self.getPixel(x,y)[1]*0,self.getPixel(x,y)[2]*0,255);
+
+			}
+		context.putImageData(self.imgd, 0, 0);
+		console.log(count);
+		remove('Canvas');
+       	//alert ("The image has loaded!");
+	};
+
+
 
 	function init() {
-		document.body.style.backgroundColor="#FFF";
-		for ( var i = 0; i < 7817; i++) {
+		var img = new imageClass();
+		canvas.onmouseover=function(event){
+			mx = event.clientX - 35;
+			my = event.clientY - 35;
+		};
+		document.body.style.backgroundColor="#000";
+		/*for ( var i = 0; i < 7817; i++) {
 			particle.push([
 					[100+Math.floor(Math.random()*100), Math.floor(100+Math.random()*100)],[0,0]
 				]);
+		}*/
+		for ( var n in particle) {
+			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 255);
 		}
+		c.putImageData(data,25,25);
 		draws();
 	}
 
-	document.getElementById('pixel01').addEventListener('mousemove', mouseMove, false);
+	document.getElementById('pixel01').addEventListener('mousemove', mouseMove, true);
 	document.getElementById('pixel01').addEventListener('mousedown', mouseDownEvent, false);
 	document.getElementById('pixel01').addEventListener('mouseup', mouseUpEvent, false);
 
 	function generateData() {
 		for ( var n in particle) {
-			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 0);
+			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 0, 0, 0, 255);
 			newParticlePosition(particle[n][0][0], particle[n][0][1], n);
-			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 50, 50, 50, 255);
+			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 255);
 		}
 	}
 
@@ -48,8 +122,8 @@
 
 		var dir = Math.atan2(x - mx, y - my) / Math.PI * 180;
 
-		particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) / 30 ;
-		particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) / 30 ;
+		particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) / 5 ;
+		particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) / 5 ;
 		particle[n][0][0] += particle[n][1][0];
 		particle[n][0][1] += particle[n][1][1];
 
@@ -101,7 +175,75 @@
 
 		generateData();
 		c.putImageData(data,25,25);
+
 		//c.clearRect(0, 0, canvas.width, canvas.height);
 		setTimeout( function() { draws() }, 1 );
 	}
+
+	function remove(id)
+	{
+	    return (elem=document.getElementById(id)).parentNode.removeChild(elem);
+	}
+
+	/*function colorizeImage() {
+		var count = 0;
+		var img = new Person();
+		img.img.src = 'panagora.png';
+		var context = document.getElementById('Canvas').getContext('2d');
+		context.drawImage(img.img, 0, 0);
+		img.imgd = context.getImageData(0, 0, img.img.width, img.img.height);
+		var pix = img.imgd.data;
+		console.log(img.img.width, img.img.height);
+		for (var x = 0; x < img.img.width - 1; x++)
+			for (var y = 0; y < img.img.height - 1; y++){
+			//	console.log(img.getPixel(x,y));
+				//if (img.getPixel(x,y)[0] > 60 && img.getPixel(x,y)[0] < 255)
+				if (img.getPixel(x,y)[0] == 255)
+					count++;
+				//	img.setPixel(x,y,0,0,0,255);
+					//img.setPixel(x,y,img.getPixel(x,y)[0]+20,img.getPixel(x,y)[1]+20,img.getPixel(x,y)[2]+20,img.getPixel(x,y)[3]+20);
+
+			}
+		context.putImageData(img.imgd, 0, 0);
+		console.log(count);
+	}
+
+	$(document).ready(function() {
+		colorizeImage();
+	});
+
+	function Person() {
+		this.img = new Image();
+		this.imgd;
+		this.getPixel = function(x, y) {
+			var pixel = [];
+			var pos = x + this.img.width * y;
+			pos *= 4;
+			pixel[0] = this.imgd.data[pos];
+			pixel[1] = this.imgd.data[pos + 1]; //force green to 0
+			pixel[2] = this.imgd.data[pos + 2];
+			pixel[3] = this.imgd.data[pos + 3]; //force alpha to 100%
+			return pixel;
+		}
+
+		this.setPixel = function(x, y, r, g, b, a) {
+			var pos = x + this.img.width * y;
+			pos *= 4;
+			this.imgd.data[pos] = r;
+			this.imgd.data[pos+1] = g; //force green to 0
+			this.imgd.data[pos+2] = b;
+			this.imgd.data[pos+3] = a; //force alpha to 100%
+		}
+
+		this.img.onload = xxx();
+	}
+
+	function xxx() {
+       		//alert ("The image has loaded!");
+		};
+
+
+	function list() {
+  		return Array.prototype.slice.call(arguments);
+	}*/
 </script>
