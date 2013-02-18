@@ -1,4 +1,4 @@
-<!-- <canvas id="pixel01" width="1000" height="1000" ></canvas> -->
+<canvas id="pixel01" width="1000" height="1000" ></canvas>
 <canvas id="Canvas" style="border:1px solid #000000;" height="800" width="1280">
 <script language="Javascript">
 	//hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
@@ -9,10 +9,10 @@
 		hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
 	*/
 
-	var canvas = document.getElementById('Canvas');
+	var canvas = document.getElementById('pixel01');
 	var c = canvas.getContext('2d');
 
-	var data;// = c.createImageData(1000,1000);
+	var data = c.createImageData(1000,1000);
 
 	var dir = 0;
 	var mx = 500;
@@ -24,52 +24,144 @@
 	//init();
 	window.onload = init;
 
+	/*function colorizeImage() {
+
+		var img = new ImageClass();
+
+	}
+
+	$(document).ready(function() {
+		colorizeImage();
+	});*/
+
+	function imageClass() {
+		this.img = new Image();
+		this.imgd;
+		this.getPixel = function(x, y) {
+			var pixel = [];
+			var pos = x + this.img.width * y;
+			pos *= 4;
+			pixel[0] = this.imgd.data[pos];
+			pixel[1] = this.imgd.data[pos + 1]; //force green to 0
+			pixel[2] = this.imgd.data[pos + 2];
+			pixel[3] = this.imgd.data[pos + 3]; //force alpha to 100%
+			return pixel;
+		}
+
+		this.setPixel = function(x, y, r, g, b, a) {
+			var pos = x + this.img.width * y;
+			pos *= 4;
+			this.imgd.data[pos] = r;
+			this.imgd.data[pos+1] = g; //force green to 0
+			this.imgd.data[pos+2] = b;
+			this.imgd.data[pos+3] = a; //force alpha to 100%
+		}
+
+		this.img.onload = imageLoaded(this);
+	}
+
 	// Converts image to canvas; returns new canvas element
 	function convertImageToCanvas(image) {
-
 	  var canvas = document.createElement("canvas");
 	  canvas.width = image.width;
 	  canvas.height = image.height;
-	  console.log(image);
 	  canvas.getContext("2d").drawImage(image, 0, 0);
 
 	  return canvas;
 	}
 
-	function init() {
-		var image = new Image();
-		image.src = 'panagora.png';
-		canvas = convertImageToCanvas(image); //document.createElement('canvas');
+	function imageLoaded(self) {
+				// 1) Create a canvas, either on the page or simply in code
+		var image = document.createElement( "image" );
+		image.scr = 'panagora.png';
+		var canvas = convertImageToCanvas(image); //document.createElement('canvas');
 		var ctx    = canvas.getContext('2d');
 
 		// 2) Copy your image data into the canvas
-		//var myImgElement = document.getElementById('Canvas');
-		//c.drawImage( myImgElement, 0, 0 );
+		var myImgElement = document.getElementById('Canvas');
+		ctx.drawImage( myImgElement, 0, 0 );
 
 		// 3) Read your image data
-		//var w = myImgElement.width, h=myImgElement.height;
-		console.log(1)
-		data = ctx.getImageData(0,0,1280,800);
+		var w = myImgElement.width, h=myImgElement.height;
+		var imgdata = ctx.getImageData(0,0,w,h);
+		var rgba = imgdata.data;
 
-		//data = imgdata;
-		data.width = 1280;
+		for (var x = 0; x < w - 1; x++)
+			for (var y = 0; y < h - 1; y++){
+			//	console.log(img.getPixel(x,y));
+				//if (img.getPixel(x,y)[0] > 60 && img.getPixel(x,y)[0] < 255)
+				if (getPixel(x,y,rgba)[0] == 255)
+					particle.push([
+						[x, y],[Math.random()*0,Math.random()*1]
+						]);
+					//self.setPixel(x,y,self.getPixel(x,y)[0]*0,self.getPixel(x,y)[1]*0,self.getPixel(x,y)[2]*0,255);
 
-
-		for (var x = 0; x < 1280 - 1; x++)
-			for (var y = 0; y < 800 - 1; y++){
-				if (getPixel(x,y)[0] == 255)
-					particle.push([[x, y],[Math.random()*0,Math.random()*1]]);
 			}
 		//document.getElementById('Canvas').getContext('2d').putImageData(rgba, 0, 0);
-		//data = rgba;
+		data = rgba;
+		console.log(rgba);
 
+
+		self.img.src = 'panagora.png';
+		var context = document.getElementById('Canvas').getContext('2d');
+		context.drawImage(self.img, 0, 0);
+		self.imgd = context.getImageData(0, 0, self.img.width, self.img.height);
+		var pix = self.imgd.data;
+		console.log(self.img.width, self.img.height);
+		for (var x = 0; x < self.img.width - 1; x++)
+			for (var y = 0; y < self.img.height - 1; y++){
+			//	console.log(img.getPixel(x,y));
+				//if (img.getPixel(x,y)[0] > 60 && img.getPixel(x,y)[0] < 255)
+				if (self.getPixel(x,y)[0] == 255)
+					particle.push([
+						[x, y],[Math.random()*0,Math.random()*1]
+						]);
+					//self.setPixel(x,y,self.getPixel(x,y)[0]*0,self.getPixel(x,y)[1]*0,self.getPixel(x,y)[2]*0,255);
+
+			}
+		context.putImageData(self.imgd, 0, 0);
+
+		remove('Canvas');
+       	//alert ("The image has loaded!");
+	};
+
+
+
+	function init() {
+		var image = document.createElement( "image" );
+		image.scr = 'panagora.png';
+		var canvas = convertImageToCanvas(image); //document.createElement('canvas');
+		var ctx    = canvas.getContext('2d');
+
+		// 2) Copy your image data into the canvas
+		var myImgElement = document.getElementById('Canvas');
+		ctx.drawImage( myImgElement, 0, 0 );
+
+		// 3) Read your image data
+		var w = myImgElement.width, h=myImgElement.height;
+		var imgdata = ctx.getImageData(0,0,w,h);
+		var rgba = imgdata.data;
+
+		for (var x = 0; x < w - 1; x++)
+			for (var y = 0; y < h - 1; y++){
+			//	console.log(img.getPixel(x,y));
+				//if (img.getPixel(x,y)[0] > 60 && img.getPixel(x,y)[0] < 255)
+				if (getPixel(x,y,rgba)[0] == 255)
+					particle.push([
+						[x, y],[Math.random()*0,Math.random()*1]
+						]);
+					//self.setPixel(x,y,self.getPixel(x,y)[0]*0,self.getPixel(x,y)[1]*0,self.getPixel(x,y)[2]*0,255);
+
+			}
+		//document.getElementById('Canvas').getContext('2d').putImageData(rgba, 0, 0);
+		data = rgba;
+		console.log(rgba);
 
 		//var img = new imageClass();
 		canvas.onmouseover=function(event){
 			mx = event.clientX - 35;
 			my = event.clientY - 35;
 		};
-		console.log(mx,my);
 		document.body.style.backgroundColor="#000";
 		/*for ( var i = 0; i < 7817; i++) {
 			particle.push([
@@ -79,37 +171,13 @@
 		for ( var n in particle) {
 			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 255);
 		}
-
-		//ddraws(50);
-		//var count = 0;
-		function ddraws(counts) {
-			for (var x = 0; x < w ; x++)
-				for (var y = 0; y < h ; y++) {
-					alphap(x, y);
-				}
-
-			//generateData();
-			c.putImageData(data,25,25);
-			//c.clearRect(0, 0, canvas.width, canvas.height);
-			//console.log(counts);
-
-			if ( counts > 0)
-				setTimeout( function() { ddraws(counts - 1) }, 100 );
-			else {
-
-				c.putImageData(data,25,25);
-				draws();
-			}
-
-		}
-
+		c.putImageData(data,25,25);
 		draws();
-
 	}
 
-	document.getElementById('Canvas').addEventListener('mousemove', mouseMove, true);
-	document.getElementById('Canvas').addEventListener('mousedown', mouseDownEvent, false);
-	document.getElementById('Canvas').addEventListener('mouseup', mouseUpEvent, false);
+	document.getElementById('pixel01').addEventListener('mousemove', mouseMove, true);
+	document.getElementById('pixel01').addEventListener('mousedown', mouseDownEvent, false);
+	document.getElementById('pixel01').addEventListener('mouseup', mouseUpEvent, false);
 
 	function generateData() {
 		for ( var n in particle) {
@@ -136,31 +204,20 @@
 	function setPixel(x, y, r, g, b, a) {
 		var pos = x + data.width * y;
 		pos *= 4;
-		data.data[pos] = r;
-		data.data[pos+1] = g; //force green to 0
-		data.data[pos+2] = b;
-		data.data[pos+3] = a; //force alpha to 100%
+		data[pos] = r;
+		data[pos+1] = g; //force green to 0
+		data[pos+2] = b;
+		data[pos+3] = a; //force alpha to 100%
 	}
 
-	function alphap(x, y) {
-		var pos = x * 4 + data.width * y * 4;
-
-		if ( data.data[pos] == 255 || data.data[pos + 3] == 0)
-			return;
-		//data.data[pos];
-		//data.data[pos + 1]; //force green to 0
-		//data.data[pos + 2];
-		data.data[pos + 3] -=5; //force alpha to 100%
-	}
-
-	function getPixel(x, y) {
+	function getPixel(x, y, imagedata) {
 		var pixel = [];
-		var pos = x + data.width * y;
+		var pos = x + imagedata.width * y;
 		pos *= 4;
-		pixel[0] = data.data[pos];
-		pixel[1] = data.data[pos + 1]; //force green to 0
-		pixel[2] = data.data[pos + 2];
-		pixel[3] = data.data[pos + 3]; //force alpha to 100%
+		pixel[0] = imagedata[pos];
+		pixel[1] = imagedata[pos + 1]; //force green to 0
+		pixel[2] = imagedata[pos + 2];
+		pixel[3] = imagedata[pos + 3]; //force alpha to 100%
 		return pixel;
 	}
 

@@ -9,8 +9,8 @@
 		hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
 	*/
 
-	var canvas = document.getElementById('Canvas');
-	var c = canvas.getContext('2d');
+	var canvass = document.getElementById('Canvas');
+	var c = canvass.getContext('2d');
 
 	var data;// = c.createImageData(1000,1000);
 
@@ -39,24 +39,24 @@
 	function init() {
 		var image = new Image();
 		image.src = 'panagora.png';
-		canvas = convertImageToCanvas(image); //document.createElement('canvas');
+		var canvas = convertImageToCanvas(image); //document.createElement('canvas');
 		var ctx    = canvas.getContext('2d');
 
 		// 2) Copy your image data into the canvas
-		//var myImgElement = document.getElementById('Canvas');
-		//c.drawImage( myImgElement, 0, 0 );
+		var myImgElement = document.getElementById('Canvas');
+		ctx.drawImage( myImgElement, 0, 0 );
 
 		// 3) Read your image data
-		//var w = myImgElement.width, h=myImgElement.height;
+		var w = myImgElement.width, h=myImgElement.height;
 		console.log(1)
-		data = ctx.getImageData(0,0,1280,800);
+		var imgdata = ctx.getImageData(0,0,w,h);
 
-		//data = imgdata;
-		data.width = 1280;
+		data = imgdata;
+		data.width = w;
 
 
-		for (var x = 0; x < 1280 - 1; x++)
-			for (var y = 0; y < 800 - 1; y++){
+		for (var x = 0; x < w - 1; x++)
+			for (var y = 0; y < h - 1; y++){
 				if (getPixel(x,y)[0] == 255)
 					particle.push([[x, y],[Math.random()*0,Math.random()*1]]);
 			}
@@ -80,7 +80,7 @@
 			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 255);
 		}
 
-		//ddraws(50);
+		ddraws(50)
 		//var count = 0;
 		function ddraws(counts) {
 			for (var x = 0; x < w ; x++)
@@ -103,7 +103,7 @@
 
 		}
 
-		draws();
+
 
 	}
 
