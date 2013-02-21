@@ -1,21 +1,24 @@
- <!-- hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.
 
-		float dir = atan2(x - mx, y - my) / PI * 180;
-		hspeed += -sin (dir*PI/180) / 30;
-		vspeed += -cos (dir*PI/180) / 30;
-		hspeed and vspeed are﻿ added to the X and Y position at the end of the loop.-->
-
-<p color="#FFF">FPS: 30</p>
+<p style="color:#FFF"><span id="fps" style="color:#FFF">0</span> fps</p>
 <canvas id="Canvas" height="800" width="1280">
+<style>
+p
+{
+position:absolute;
+left:25px;
+/*top:20px;*/
+}
+canvas
+{
+//position:absolute;
+left:0px;
+top:0px;
+}
+</style>
 <script language="Javascript">
 	document.body.style.backgroundColor="#000";
 	var canvas = document.getElementById('Canvas');
 	var c = canvas.getContext('2d');
-	canvas.onmouseover = function(event) {
-		mx = event.clientX - 35;
-		my = event.clientY - 35;
-		console.log(mx,my);
-	};
 
 	var data;
 	var dir = 0;
@@ -24,7 +27,9 @@
 	var particleSpeed = 20;
 
 	var particle = new Array();
+	var template = new Array();
 	var mouseDown = false;
+	var mouseOver = true;
 
 	window.onload = init;
 
@@ -52,32 +57,21 @@
 
 			for (var x = 0; x < data.width; x++)
 				for (var y = 0; y < data.height; y++) {
-					if ( getPixel(x,y)[0] > 100 )
+					if ( getPixel(x,y)[0] > 100 ) {
 						particle.push([[x, y],[Math.random()*0.1,Math.random()*2-1]]);
+						template.push([x, y]);
+					}
 				}
-
-
-
-			for ( var n in particle) {
-				setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 255);
-			}
 
 			preload(2);
 
 			function preload(counts) {
-				for (var x = 0; x < 1280 ; x++)
-					for (var y = 0; y < 800 ; y++) {
-						alphap(x, y);
-					}
-				c.putImageData(data,25,25);
 
 				if ( counts > 0)
 					setTimeout( function() { preload(counts - 1) }, 0 );
 				else {
-					c.putImageData(data,25,25);
 					draw();
 				}
-
 			}
 		}
 	}
@@ -94,33 +88,43 @@
 
 		var dir = Math.atan2(x - mx, y - my) / Math.PI * 180;
 
-		particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) ;//particleSpeed;
-		particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) ;//particleSpeed;
+		if ( mouseDown || !mouseOver ) {
+			if (!mouseOver) {
+				particle[n][1][0] -= ( x - template[n][0])/50;
+				particle[n][1][1] += ( template[n][1]- y )/50;
+			} else {
+				if (( x - mx ) *( x - mx ) + ( my - y )*( my - y ) < 1000) {
+					particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) * 8;
+					particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) * 8;
+				} else {
+					particle[n][1][0] -= ( x - mx )/20;
+					particle[n][1][1] += ( my - y )/20;
+				}
+			}
+
+			if (particle[n][1][0] < 0 && ( x - mx ) > 0 || particle[n][1][0] > 0 && ( x - mx ) < 0)
+				particle[n][1][0] *= 0.8-Math.random() / 10;
+
+			if (particle[n][1][1] < 0 && ( my - y ) < 0 || particle[n][1][1] > 0 && ( my - y ) > 0)
+				particle[n][1][1] *= 0.8-Math.random() / 10;
+
+		} else {
+			particle[n][1][0] += -Math.sin(dir * Math.PI / 180 );
+			particle[n][1][1] += -Math.cos(dir * Math.PI / 180 );
+
+		}
+
 		particle[n][0][0] += particle[n][1][0] ;
 		particle[n][0][1] += particle[n][1][1] ;
-
-		if ( mouseDown ) {
-			/*particle[n][0][0] += particle[n][1][0]* Math.abs(x - mx) ;
-			particle[n][0][1] += particle[n][1][1]* Math.abs( my - y) ;*/
-			particle[n][1][0] = -Math.sin(dir * Math.PI / 180 )*Math.abs(x - mx*Math.random()*0.1) /30;//particleSpeed;
-			particle[n][1][1] = -Math.cos(dir * Math.PI / 180 )*Math.abs( my - y*Math.random()*0.1)/30;//particleSpeed;
-		}
 	}
 
 	function setPixel(x, y, r, g, b, a) {
 		var pos = x + data.width * y;
 		pos *= 4;
 		data.data[pos] = r;
-		data.data[pos + 1] = g; //force green to 0
+		data.data[pos + 1] = g;
 		data.data[pos + 2] = b;
-		data.data[pos + 3] = a; //force alpha to 100%
-	}
-
-	function alphap(x, y) {
-		var pos = x * 4 + data.width * y * 4;
-		if ( data.data[pos] == 255 || data.data[pos + 3] == 0)
-			return;
-		data.data[pos + 3] -=1; //force alpha to 100%
+		data.data[pos + 3] = a;
 	}
 
 	function getPixel(x, y) {
@@ -149,15 +153,44 @@
 
 	function mouseMove(e) {
 		mx = e.clientX - 35;
-		my = e.clientY - 35;
+		my = e.clientY - 65;
 		//console.log(mx,my);
 	}
 
+	canvas.onmouseover = function(event) {
+		mouseOver = true;
+	};
+
+	canvas.onmouseleave = function(event) {
+		mouseOver = false;
+	};
+
+	var currentTime;
+	var prevTime = +new Date();;
+	var deltaTime = Number.MAX_VALUE;
+	var ccc = 0;
 	function draw() {
-		particleSpeed *= .1;
+		//particleSpeed *= .1;
 		generateData();
 		c.putImageData(data,25,25);
+		if ( false/*mouseDown*/ ) {
+
+			recycle();
+
+		} else {
+
+		if (ccc % 30 === 0)
+		{
+			currentTime = +new Date();
+			deltaTime = currentTime - prevTime;
+			document.getElementById('fps').innerHTML = Math.round(30000/deltaTime);
+			prevTime = currentTime;
+
+		}
+		ccc++;
 		setTimeout( function() { draw() }, 0 );
+
+		}
 	}
 
 	function remove(id)
@@ -165,65 +198,4 @@
 	    return (elem=document.getElementById(id)).parentNode.removeChild(elem);
 	}
 
-	/*function colorizeImage() {
-		var count = 0;
-		var img = new Person();
-		img.img.src = 'panagora.png';
-		var context = document.getElementById('Canvas').getContext('2d');
-		context.drawImage(img.img, 0, 0);
-		img.imgd = context.getImageData(0, 0, img.img.width, img.img.height);
-		var pix = img.imgd.data;
-		console.log(img.img.width, img.img.height);
-		for (var x = 0; x < img.img.width - 1; x++)
-			for (var y = 0; y < img.img.height - 1; y++){
-			//	console.log(img.getPixel(x,y));
-				//if (img.getPixel(x,y)[0] > 60 && img.getPixel(x,y)[0] < 255)
-				if (img.getPixel(x,y)[0] == 255)
-					count++;
-				//	img.setPixel(x,y,0,0,0,255);
-					//img.setPixel(x,y,img.getPixel(x,y)[0]+20,img.getPixel(x,y)[1]+20,img.getPixel(x,y)[2]+20,img.getPixel(x,y)[3]+20);
-
-			}
-		context.putImageData(img.imgd, 0, 0);
-		console.log(count);
-	}
-
-	$(document).ready(function() {
-		colorizeImage();
-	});
-
-	function Person() {
-		this.img = new Image();
-		this.imgd;
-		this.getPixel = function(x, y) {
-			var pixel = [];
-			var pos = x + this.img.width * y;
-			pos *= 4;
-			pixel[0] = this.imgd.data[pos];
-			pixel[1] = this.imgd.data[pos + 1]; //force green to 0
-			pixel[2] = this.imgd.data[pos + 2];
-			pixel[3] = this.imgd.data[pos + 3]; //force alpha to 100%
-			return pixel;
-		}
-
-		this.setPixel = function(x, y, r, g, b, a) {
-			var pos = x + this.img.width * y;
-			pos *= 4;
-			this.imgd.data[pos] = r;
-			this.imgd.data[pos+1] = g; //force green to 0
-			this.imgd.data[pos+2] = b;
-			this.imgd.data[pos+3] = a; //force alpha to 100%
-		}
-
-		this.img.onload = xxx();
-	}
-
-	function xxx() {
-       		//alert ("The image has loaded!");
-		};
-
-
-	function list() {
-  		return Array.prototype.slice.call(arguments);
-	}*/
 </script>
