@@ -97,8 +97,8 @@ top:0px;
 					particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) * 8;
 					particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) * 8;
 				} else {
-					particle[n][1][0] -= ( x - mx )/20;
-					particle[n][1][1] += ( my - y )/20;
+					particle[n][1][0] -= ( x - mx ) / 20 * frames/20;
+					particle[n][1][1] += ( my - y ) / 20 * frames/20;
 				}
 			}
 
@@ -111,11 +111,10 @@ top:0px;
 		} else {
 			particle[n][1][0] += -Math.sin(dir * Math.PI / 180 );
 			particle[n][1][1] += -Math.cos(dir * Math.PI / 180 );
-
 		}
 
-		particle[n][0][0] += particle[n][1][0] ;
-		particle[n][0][1] += particle[n][1][1] ;
+		particle[n][0][0] += particle[n][1][0] * 30 / frames;
+		particle[n][0][1] += particle[n][1][1] * 30 / frames;
 	}
 
 	function setPixel(x, y, r, g, b, a) {
@@ -161,13 +160,14 @@ top:0px;
 		mouseOver = true;
 	};
 
-	canvas.onmouseleave = function(event) {
+	canvas.onmouseout = function(event) {
 		mouseOver = false;
 	};
 
 	var currentTime;
 	var prevTime = +new Date();;
 	var deltaTime = Number.MAX_VALUE;
+	var frames = Number.MAX_VALUE;
 	var ccc = 0;
 	function draw() {
 		//particleSpeed *= .1;
@@ -183,6 +183,7 @@ top:0px;
 		{
 			currentTime = +new Date();
 			deltaTime = currentTime - prevTime;
+			frames = Math.round(30000/deltaTime);
 			document.getElementById('fps').innerHTML = Math.round(30000/deltaTime);
 			prevTime = currentTime;
 
