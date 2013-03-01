@@ -1,4 +1,6 @@
 
+<!--[if IE]><script type="text/javascript" src="/public/path/flash_backend.js"></script><![endif]-->
+
 <p style="color:#FFF"><span id="fps" style="color:#FFF">0</span> fps</p>
 <canvas id="Canvas" height="800" width="1280">
 <style>
@@ -23,9 +25,9 @@ top:0px;
 	var dir = 0;
 	var mx = 640;
 	var my = 400;
-	var particleSpeed = 20;
+	var XparticleSpeed = 20;
 
-	var particle = new Array();
+	var Xparticle = new Array();
 	var template = new Array();
 	var mouseDown = false;
 	var mouseOver = true;
@@ -45,137 +47,135 @@ top:0px;
 		document.getElementById('Canvas').addEventListener('mousedown', mouseDownEvent, false);
 		document.getElementById('Canvas').addEventListener('mouseup', mouseUpEvent, false);
 
+
+
 		var image = new Image();
 		image.src = 'panagora.png';
 		image.onload = function() {
 			canvas = convertImageToCanvas(image);
-			var ctx = canvas.getContext('2d');
-			data = ctx.getImageData(0,0,1280,800);
+			data = canvas.getContext('2d').getImageData(0,0,1280,800);
 			data.width = 1280;
 			data.height = 800;
-
-			for (var x = 0; x < data.width; x++)
-				for (var y = 0; y < data.height; y++) {
-					if ( getPixel(x,y)[0] > 100 ) {
-						particle.push([[x, y],[Math.random()*0.1,Math.random()*2-1]]);
-						template.push([x, y]);
-					}
-				}
-
-			preload(2);
-
-			function preload(counts) {
-
-				if ( counts > 0)
-					setTimeout( function() { preload(counts - 1) }, 0 );
-				else {
-					draw();
-				}
-			}
+			var particleArray = new particles();
+			particleArray.drawparticles();
 		}
 	}
 
-	function generateData() {
-		for ( var n in particle ) {
-			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 0, 0, 0, 255);
-			newParticlePosition(particle[n][0][0], particle[n][0][1], n);
-			setPixel(Math.round(particle[n][0][0]), Math.round(particle[n][0][1]), 255, 255, 255, 255);
-		}
-	}
 	// -- OOP --
-	xpoint = function(x, y) {
+	point = function(x, y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	xparticle = function(x, y, dx, dy) {
-		this.postition = new xpoint(x,y);
-		this.speed = new xpoint(dx,dy);
-		var getAcceleration = function() {
-			return Math.atan2(this.postition.x - mouse.x, this.postition.y - mouse.y);
-		}
-		var setSpeed = function() {
-			var dir = getAcceleration();
-			this.speed.x -= Math.sin(dir);
-			this.speed.y -= Math.cos(dir)
-		}
-		var setPosition = function() {
-			this.position.x += this.speed.x * 30 / frames;
-			this.position.y += this.speed.y * 30 / frames;
-		}
-		this.nextStep = function() {
-			setSpeed();
-			setPosition();
+	particle = function(x, y, dx, dy) {
+		// Private
+		var postition = new point(x,y),
+			speed = new point(dx,dy),
+			frames = 20,
+			getAcceleration = function() {
+				return Math.atan2(postition.x - mx, postition.y - my);
+			},
+			setSpeed = function() {
+				var dir = getAcceleration();
+				speed.x -= Math.sin(dir);
+				speed.y -= Math.cos(dir)
+			},
+			setPosition = function() {
+				postition.x += speed.x * 30 / frames;
+				postition.y += speed.y * 30 / frames;
+			},
+			nextStep = function() {
+				setSpeed();
+				setPosition();
+			}
+		// Public
+		this.drawparticle = function() {
+			setPixel(postition.x, postition.y, 0);
+			nextStep();
+			setPixel(postition.x, postition.y, 255);
 		}
 	}
 
 	particles = function() {
-		init();
-		var particleArray = new Array();
-		var templateArray = new Array();
-		var init = function() {
-			for (var x = 0; x < data.width; x++) {
-				for (var y = 0; y < data.height; y++) {
-					if ( getPixel(x,y)[0] > 100 ) {
-						particleArray.push(new particle(x, y, Math.random()/10, Math.random()*2-1));
-						template.push(new particle(x, y));
+		var particleArray = new Array(),
+			templateArray = new Array(),
+			init = function() {
+				for (var x = 0; x < 1280; x++) {
+					for (var y = 0; y < 800; y++) {
+						if ( getPixel(x,y)[0] > 100 ) {
+							particleArray.push(new particle(x, y, Math.random(), Math.random()));
+							template.push(new particle(x, y, 0, 0));
+						}
 					}
 				}
+			},
+			animate = function() {
+				for ( var p in particleArray ) {
+					particleArray[p].drawparticle();
+				}
+			}
+		this.drawparticles = function() {
+			render();
+			function render() {
+				animate();
+				c.putImageData(data, 25, 25);
+				setTimeout( function() { render() }, 0 );
 			}
 		}
+		init();
 	}
+
 
 	//----------
 
-	function newParticlePosition(x, y, n) {
+	function newXparticlePosition(x, y, n) {
 
 		var dir = Math.atan2(x - mx, y - my) / Math.PI * 180;
 
 		if ( mouseDown || !mouseOver ) {
 			if (!mouseOver) {
-				particle[n][1][0] -= ( x - template[n][0] )/50;
-				particle[n][1][1] += ( template[n][1] - y )/50;
+				Xparticle[n][1][0] -= ( x - template[n][0] )/50;
+				Xparticle[n][1][1] += ( template[n][1] - y )/50;
 			} else {
 				if (( x - mx ) *( x - mx ) + ( my - y )*( my - y ) < 1000) {
-					particle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) * 8;
-					particle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) * 8;
+					Xparticle[n][1][0] += -Math.sin(dir * Math.PI / 180 ) * 8;
+					Xparticle[n][1][1] += -Math.cos(dir * Math.PI / 180 ) * 8;
 				} else {
-					particle[n][1][0] -= ( x - mx ) * frames/400;
-					particle[n][1][1] += ( my - y ) * frames/400;
+					Xparticle[n][1][0] -= ( x - mx ) * frames/400;
+					Xparticle[n][1][1] += ( my - y ) * frames/400;
 				}
 			}
 
-			if (particle[n][1][0] < 0 && ( x - mx ) > 0 || particle[n][1][0] > 0 && ( x - mx ) < 0)
-				particle[n][1][0] *= 0.8-Math.random() / 10;
+			if (Xparticle[n][1][0] < 0 && ( x - mx ) > 0 || Xparticle[n][1][0] > 0 && ( x - mx ) < 0)
+				Xparticle[n][1][0] *= 0.8-Math.random() / 10;
 
-			if (particle[n][1][1] < 0 && ( my - y ) < 0 || particle[n][1][1] > 0 && ( my - y ) > 0)
-				particle[n][1][1] *= 0.8-Math.random() / 10;
+			if (Xparticle[n][1][1] < 0 && ( my - y ) < 0 || Xparticle[n][1][1] > 0 && ( my - y ) > 0)
+				Xparticle[n][1][1] *= 0.8-Math.random() / 10;
 
 		} else {
-			particle[n][1][0] += -Math.sin(dir * Math.PI / 180 );
-			particle[n][1][1] += -Math.cos(dir * Math.PI / 180 );
+			Xparticle[n][1][0] += -Math.sin(dir * Math.PI / 180 );
+			Xparticle[n][1][1] += -Math.cos(dir * Math.PI / 180 );
 		}
 
-		particle[n][0][0] += particle[n][1][0] * 30 / frames;
-		particle[n][0][1] += particle[n][1][1] * 30 / frames;
+		Xparticle[n][0][0] += Xparticle[n][1][0] * 30 / frames;
+		Xparticle[n][0][1] += Xparticle[n][1][1] * 30 / frames;
 	}
 
-	function setPixel(x, y, r, g, b, a) {
+	function setPixel(x, y, a) {
 		if( x < 0 || y < 0 || x > data.width || y > data.height )
 			return;
 
-		var pos = x + data.width * y;
-
-		pos *= 4;
-		data.data[pos] = r;
-		data.data[pos + 1] = g;
-		data.data[pos + 2] = b;
-		data.data[pos + 3] = a;
+		var pos = (Math.round(x) + data.width * Math.round(y)) * 4;
+		//console.log(data);
+		data.data[pos] = a;
+		data.data[pos + 1] = a;
+		data.data[pos + 2] = a;
+		data.data[pos + 3] = 255;
 	}
 
 	function getPixel(x, y) {
 		var pixel = [];
-		var pos = x + data.width * y;
+		var pos = x + 1280 * y;
 		pos *= 4;
 		pixel[0] = data.data[pos];
 		pixel[1] = data.data[pos + 1]; //force green to 0
@@ -217,9 +217,9 @@ top:0px;
 	var frames = Number.MAX_VALUE;
 	var ccc = 0;
 	function draw() {
-		//particleSpeed *= .1;
+		//XparticleSpeed *= .1;
 		generateData();
-		c.putImageData(data,25,25);
+		c.putImageData(data, 25, 25);
 		if ( false/*mouseDown*/ ) {
 
 			recycle();
@@ -236,7 +236,7 @@ top:0px;
 
 		}
 		ccc++;
-		setTimeout( function() { draw() }, 0 );
+		//setTimeout( function() { draw() }, 0 );
 
 		}
 	}
