@@ -1,24 +1,22 @@
 
 <!--[if IE]><script type="text/javascript" src="/public/path/flash_backend.js"></script><![endif]-->
-
-<p style="color:#FFF"><span id="fps" style="color:#FFF">0</span> fps</p>
-<canvas id="Canvas" height="800" width="1280">
+<body></body>
 <style>
-p
-{
-position:absolute;
-left:25px;
-/*top:20px;*/
-}
-canvas
-{
-left:0px;
-top:0px;
-}
 </style>
 <script language="Javascript">
 	document.body.style.backgroundColor="#000";
-	var canvas = document.getElementById('Canvas');
+
+	var span = document.createElement('span');
+	span.style.color = '#FFF';
+	span.innerHTML = "0 fps";
+	span.style.marginLeft="30px";
+	document.body.appendChild(span);
+
+	var canvas = document.createElement("canvas");
+	canvas.id = "Canvas";
+	canvas.width = 1280;
+	canvas.height = 800;
+	document.body.appendChild(canvas);
 	var c = canvas.getContext('2d');
 
 	var data;
@@ -43,19 +41,19 @@ top:0px;
 	}
 
 	function init() {
-		document.getElementById('Canvas').addEventListener('mousemove', mouseMove, true);
-		document.getElementById('Canvas').addEventListener('mousedown', mouseDownEvent, false);
-		document.getElementById('Canvas').addEventListener('mouseup', mouseUpEvent, false);
-
-
+		var canvas = document.getElementById('Canvas');
+		document.body.appendChild(canvas);
+		canvas.addEventListener('mousemove', mouseMove, true);
+		canvas.addEventListener('mousedown', mouseDownEvent, false);
+		canvas.addEventListener('mouseup', mouseUpEvent, false);
 
 		var image = new Image();
 		image.src = 'panagora.png';
 		image.onload = function() {
 			canvas = convertImageToCanvas(image);
-			data = canvas.getContext('2d').getImageData(0,0,1280,800);
-			data.width = 1280;
-			data.height = 800;
+			data = canvas.getContext('2d').getImageData(0, 0, image.width, image.height);
+			data.width = image.width;
+			data.height = image.height;
 			var particleArray = new particles();
 			particleArray.drawparticles();
 		}
@@ -100,8 +98,8 @@ top:0px;
 		var particleArray = new Array(),
 			templateArray = new Array(),
 			init = function() {
-				for (var x = 0; x < 1280; x++) {
-					for (var y = 0; y < 800; y++) {
+				for (var x = 0; x < canvas.width; x++) {
+					for (var y = 0; y < canvas.height; y++) {
 						if ( getPixel(x,y)[0] > 100 ) {
 							particleArray.push(new particle(x, y, Math.random(), Math.random()));
 							template.push(new particle(x, y, 0, 0));
@@ -191,6 +189,7 @@ top:0px;
 
 	function mouseDownEvent() {
 		mouseDown = true;
+		console.log('mouseDownEvent');
 	}
 
 	function mouseUpEvent() {
