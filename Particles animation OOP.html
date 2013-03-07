@@ -1,23 +1,9 @@
 
 <!--[if IE]><script type="text/javascript" src="/public/path/flash_backend.js"></script><![endif]-->
 <body></body>
-<style>
-</style>
 <script language="Javascript">
 	document.body.style.backgroundColor="#000";
-
-	var span = document.createElement('span');
-	span.style.color = '#FFF';
-	span.innerHTML = "0 fps";
-	span.style.marginLeft="30px";
-	document.body.appendChild(span);
-
-	var canvas = document.createElement("canvas");
-	canvas.id = "Canvas";
-	canvas.width = 1280;
-	canvas.height = 800;
-	document.body.appendChild(canvas);
-	var c = canvas.getContext('2d');
+	var span, ctx;
 
 	var data;
 	var dir = 0;
@@ -32,31 +18,51 @@
 
 	window.onload = init;
 
-	function convertImageToCanvas(image) {
-		var canvas = document.createElement("canvas");
-		canvas.width = image.width;
-		canvas.height = image.height;
-		canvas.getContext("2d").drawImage(image, 0, 0);
-		return canvas;
+	function init() {
+		var image;
+		function init() {
+			span = document.createElement('span');
+			span.style.color = '#FFF';
+			span.innerHTML = "0 fps";
+			span.style.marginLeft = "30px";
+			document.body.appendChild(span);
+
+			image = new Image();
+			image.src = 'panagora.png';
+
+			image.onload = function() {
+				var canvas = new canvasClass(image);
+				var particleArray = new particles();
+				particleArray.drawparticles();
+			}
+		}
+
+		init();
 	}
 
-	function init() {
-		var canvas = document.getElementById('Canvas');
+	canvasClass = function(image) {
+		var canvas = document.createElement("canvas");
+		var	mouseButtonEvent = function(e) {
+					mouseDown = e.type === 'mousedown';
+				},
+			mouseMoveEvent = function(event) {
+					mx = event.clientX - 35;
+					my = event.clientY - 35;
+				},
+			mouseEnter = function(e) {
+				mouseOver = e.type === 'mouseover';
+				};
+		canvas.width = image.width;
+		canvas.height = image.height;
+		canvas.addEventListener('mousemove', mouseMoveEvent, true);
+		canvas.addEventListener('mousedown', mouseButtonEvent, false);
+		canvas.addEventListener('mouseup', mouseButtonEvent, false);
+		canvas.onmouseover = mouseEnter;
+		canvas.onmouseout = mouseEnter;
+		canvas.getContext("2d").drawImage(image, 0, 0);
+		ctx = canvas.getContext('2d');
+		data = canvas.getContext('2d').getImageData(0, 0, image.width, image.height);
 		document.body.appendChild(canvas);
-		canvas.addEventListener('mousemove', mouseMove, true);
-		canvas.addEventListener('mousedown', mouseDownEvent, false);
-		canvas.addEventListener('mouseup', mouseUpEvent, false);
-
-		var image = new Image();
-		image.src = 'panagora.png';
-		image.onload = function() {
-			canvas = convertImageToCanvas(image);
-			data = canvas.getContext('2d').getImageData(0, 0, image.width, image.height);
-			data.width = image.width;
-			data.height = image.height;
-			var particleArray = new particles();
-			particleArray.drawparticles();
-		}
 	}
 
 	// -- OOP --
@@ -98,8 +104,8 @@
 		var particleArray = new Array(),
 			templateArray = new Array(),
 			init = function() {
-				for (var x = 0; x < canvas.width; x++) {
-					for (var y = 0; y < canvas.height; y++) {
+				for (var x = 0; x < 1280; x++) {
+					for (var y = 0; y < 800; y++) {
 						if ( getPixel(x,y)[0] > 100 ) {
 							particleArray.push(new particle(x, y, Math.random(), Math.random()));
 							template.push(new particle(x, y, 0, 0));
@@ -116,7 +122,7 @@
 			render();
 			function render() {
 				animate();
-				c.putImageData(data, 25, 25);
+				ctx.putImageData(data, 0, 0);
 				setTimeout( function() { render() }, 0 );
 			}
 		}
@@ -127,7 +133,7 @@
 	//----------
 
 	function newXparticlePosition(x, y, n) {
-
+		var mx, my;
 		var dir = Math.atan2(x - mx, y - my) / Math.PI * 180;
 
 		if ( mouseDown || !mouseOver ) {
@@ -160,10 +166,10 @@
 	}
 
 	function setPixel(x, y, a) {
-		if( x < 0 || y < 0 || x > data.width || y > data.height )
+		if( x < 0 || y < 0 || x > 1280 || y > 800 )
 			return;
 
-		var pos = (Math.round(x) + data.width * Math.round(y)) * 4;
+		var pos = (Math.round(x) + 1280 * Math.round(y)) * 4;
 		//console.log(data);
 		data.data[pos] = a;
 		data.data[pos + 1] = a;
@@ -183,32 +189,11 @@
 	}
 
 	function checkPixel(x, y) {
-		var pos = (x + data.width * y) * 4 + 3;
+		var pos = (x + canvas.width * y) * 4 + 3;
 		return data.data[pos] != 0;
 	}
 
-	function mouseDownEvent() {
-		mouseDown = true;
-		console.log('mouseDownEvent');
-	}
 
-	function mouseUpEvent() {
-		mouseDown = false;
-	}
-
-	function mouseMove(e) {
-		mx = e.clientX - 35;
-		my = e.clientY - 35;
-		//console.log(mx,my);
-	}
-
-	canvas.onmouseover = function(event) {
-		mouseOver = true;
-	};
-
-	canvas.onmouseout = function(event) {
-		mouseOver = false;
-	};
 
 	var currentTime;
 	var prevTime = +new Date();
