@@ -1,20 +1,14 @@
-/*
-*/
+
 <body></body>
 <script language="Javascript">
 	document.body.style.backgroundColor="#000";
-	var span, ctx;
+	var span, ctx, data;
 
-	var data;
-
-	var mx = 640;
-	var my = 400;
-	var mouseDown = false;
-	var mouseOver = true;
 
 	window.onload = init;
 
 	function init() {
+		parameters = new parameterClass();
 		var image;
 		function init() {
 			span = document.createElement('span');
@@ -36,14 +30,14 @@
 	}
 
 	parameterClass = function() {
-		this.
-		this.timePara = {
-				currentTime,
+		this.data;
+		timePara = {
+				currentTime : 0,
 				prevTime: +new Date(),
 				deltaTime: Number.MAX_VALUE,
 				frames: Number.MAX_VALUE,
 				divider: 0
-			}
+			};
 		this.mousePara = {
 				x: 640,
 				y: 400,
@@ -53,16 +47,17 @@
 	}
 
 	canvasClass = function(image) {
-		var canvas = document.createElement("canvas");
-		var	mouseButtonEvent = function(e) {
-					mouseDown = e.type === 'mousedown';
+
+		var canvas = document.createElement("canvas"),
+			mouseButtonEvent = function(e) {
+					parameters.mousePara.down = e.type === 'mousedown';  //xxx mouseDown = e.type === 'mousedown';
 				},
 			mouseMoveEvent = function(event) {
-					mx = event.clientX - 70;
-					my = event.clientY;
+					parameters.mousePara.x = event.clientX;
+					parameters.mousePara.y = event.clientY;
 				},
 			mouseEnter = function(e) {
-				mouseOver = e.type === 'mouseover';
+				parameters.mousePara.over = e.type === 'mouseover';
 				};
 		canvas.width = image.width;
 		canvas.height = image.height;
@@ -104,7 +99,7 @@
 			startPosition = new point(x,y),
 			frames = 20,
 			getAcceleration = function() {
-				return Math.atan2(postition.x - mx, postition.y - my);
+				return Math.atan2(postition.x - parameters.mousePara.x, postition.y - parameters.mousePara.y);
 			},
 			setMouseOverSpeed = function() {
 				var dir = getAcceleration();
@@ -113,12 +108,12 @@
 			},
 			setMouseOutSpeed = function() {
 				speed.x -= ( postition.x - startPosition.x ) / 50;
-				speed.y += ( startPosition.y - postition.y ) / 50;
+				speed.y -= ( postition.y - startPosition.y ) / 50;
 			},
 			setButtonDownSpeed = function() {
 				var dir = getAcceleration(),
-					xDiff = postition.x - mx,
-					yDiff = postition.y - my;
+					xDiff = postition.x - parameters.mousePara.x,
+					yDiff = postition.y - parameters.mousePara.y;
 
 				if (xDiff * xDiff + yDiff * yDiff < 1000) {
 					speed.x += -Math.sin(dir) * 8;
@@ -129,18 +124,18 @@
 				}
 			},
 			setSpeed = function() {
-				var xDiff = postition.x - mx,
-					yDiff = postition.y - my;
-				if ( mouseDown || !mouseOver ) {
-					if (!mouseOver)
+				var xDiff = postition.x - parameters.mousePara.x,
+					yDiff = postition.y - parameters.mousePara.y;
+				if ( parameters.mousePara.down || !parameters.mousePara.over ) {
+					if (!parameters.mousePara.over)
 						setMouseOutSpeed();
-					else if (mouseDown)
+					else if (parameters.mousePara.down)
 						setButtonDownSpeed();
 					/// This is fucked up logic... move crap to point
 					if (speed.x < 0 && xDiff > 0 || speed.x > 0 && xDiff < 0)
 						speed.x *= 0.8 - Math.random() / 10;
 
-					if (speed.y < 0 && yDiff < 0 || speed.y > 0 && yDiff > 0)
+					if (speed.y < 0 && yDiff > 0 || speed.y > 0 && yDiff < 0)
 						speed.y *= 0.8 - Math.random() / 10;
 				} else
 					setMouseOverSpeed();
@@ -164,7 +159,6 @@
 	particles = function() {
 		var particleArray = new Array(),
 			templateArray = new Array(),
-			timerParam = new timerClass(),
 			getAlpha= function(x, y) {
 				var pos = (x + 1280 * y) * 4;
 				return data.data[pos];
