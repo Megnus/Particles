@@ -1,18 +1,14 @@
-
-<!--[if IE]><script type="text/javascript" src="/public/path/flash_backend.js"></script><![endif]-->
+/*
+*/
 <body></body>
 <script language="Javascript">
 	document.body.style.backgroundColor="#000";
 	var span, ctx;
 
 	var data;
-	var dir = 0;
+
 	var mx = 640;
 	var my = 400;
-	var XparticleSpeed = 20;
-
-	var Xparticle = new Array();
-	var template = new Array();
 	var mouseDown = false;
 	var mouseOver = true;
 
@@ -36,8 +32,24 @@
 				particleArray.drawparticles();
 			}
 		}
-
 		init();
+	}
+
+	parameterClass = function() {
+		this.
+		this.timePara = {
+				currentTime,
+				prevTime: +new Date(),
+				deltaTime: Number.MAX_VALUE,
+				frames: Number.MAX_VALUE,
+				divider: 0
+			}
+		this.mousePara = {
+				x: 640,
+				y: 400,
+				down: false,
+				over: true
+			}
 	}
 
 	canvasClass = function(image) {
@@ -104,26 +116,31 @@
 				speed.y += ( startPosition.y - postition.y ) / 50;
 			},
 			setButtonDownSpeed = function() {
-				var dir = getAcceleration();
-				if ((postition.x - mx) * (postition.x - mx) + (my - postition.y) * (my - postition.y ) < 1000) {
+				var dir = getAcceleration(),
+					xDiff = postition.x - mx,
+					yDiff = postition.y - my;
+
+				if (xDiff * xDiff + yDiff * yDiff < 1000) {
 					speed.x += -Math.sin(dir) * 8;
 					speed.y += -Math.cos(dir) * 8;
 				} else {
-					speed.x -= ( postition.x - mx ) * frames / 400;
-					speed.y += ( my - postition.y ) * frames / 400;
+					speed.x -= xDiff * frames / 400;
+					speed.y -= yDiff * frames / 400;
 				}
 			},
 			setSpeed = function() {
+				var xDiff = postition.x - mx,
+					yDiff = postition.y - my;
 				if ( mouseDown || !mouseOver ) {
 					if (!mouseOver)
 						setMouseOutSpeed();
 					else if (mouseDown)
 						setButtonDownSpeed();
-
-					if (speed.x < 0 && ( postition.x - mx ) > 0 || speed.x > 0 && ( postition.x - mx ) < 0)
+					/// This is fucked up logic... move crap to point
+					if (speed.x < 0 && xDiff > 0 || speed.x > 0 && xDiff < 0)
 						speed.x *= 0.8 - Math.random() / 10;
 
-					if (speed.y < 0 && ( my - postition.y ) < 0 || speed.y > 0 && ( my - postition.y ) > 0)
+					if (speed.y < 0 && yDiff < 0 || speed.y > 0 && yDiff > 0)
 						speed.y *= 0.8 - Math.random() / 10;
 				} else
 					setMouseOverSpeed();
@@ -147,6 +164,7 @@
 	particles = function() {
 		var particleArray = new Array(),
 			templateArray = new Array(),
+			timerParam = new timerClass(),
 			getAlpha= function(x, y) {
 				var pos = (x + 1280 * y) * 4;
 				return data.data[pos];
@@ -171,44 +189,17 @@
 				animate();
 				ctx.putImageData(data, 0, 0);
 				setTimeout( function() { render() }, 0 );
+				// if (divider % 30 === 0)
+				// {
+				// 	timerParam.currentTime = +new Date();
+				// 	timerParam.deltaTime = currentTime - prevTime;
+				// 	timerParam.frames = Math.round(30000/deltaTime);
+				// 	document.getElementById('fps').innerHTML = Math.round(30000 / deltaTime);
+				// 	timerParam.prevTime = currentTime;
+				// }
+				// divider++;
 			}
 		}
 		init();
 	}
-
-	var currentTime;
-	var prevTime = +new Date();
-	var deltaTime = Number.MAX_VALUE;
-	var frames = Number.MAX_VALUE;
-	var ccc = 0;
-	function draw() {
-		//XparticleSpeed *= .1;
-		generateData();
-		c.putImageData(data, 25, 25);
-		if ( false/*mouseDown*/ ) {
-
-			recycle();
-
-		} else {
-
-		if (ccc % 30 === 0)
-		{
-			currentTime = +new Date();
-			deltaTime = currentTime - prevTime;
-			frames = Math.round(30000/deltaTime);
-			document.getElementById('fps').innerHTML = Math.round(30000/deltaTime);
-			prevTime = currentTime;
-
-		}
-		ccc++;
-		//setTimeout( function() { draw() }, 0 );
-
-		}
-	}
-
-	function remove(id)
-	{
-	    return (elem=document.getElementById(id)).parentNode.removeChild(elem);
-	}
-
 </script>
