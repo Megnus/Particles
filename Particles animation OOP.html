@@ -1,44 +1,52 @@
-
-<body></body>
-<script language="Javascript">
-	document.body.style.backgroundColor="#000";
-	var span, ctx, data;
-
+ <html>
+ <head>
+ <script type="text/javascript">
+	var div, parameters, rightSpan, leftSpan, ctx, data, image;
 
 	window.onload = init;
 
 	function init() {
+		document.body.style.backgroundColor="#000";
 		parameters = new parameterClass();
-		var image;
-		function init() {
-			span = document.createElement('span');
-			span.style.color = '#FFF';
-			span.innerHTML = "0 fps";
-			span.style.marginLeft = "30px";
-			document.body.appendChild(span);
 
-			image = new Image();
-			image.src = 'panagora.png';
+		div = document.createElement('div');
+		rightSpan = document.createElement('span');
+		rightSpan.style.color = '#FFF';
+		rightSpan.textContent = "fps";
+		rightSpan.style.marginLeft = "5px";
 
-			image.onload = function() {
-				var canvas = new canvasClass(image);
-				var particleArray = new particles();
-				particleArray.drawparticles();
-			}
+		leftSpan = document.createElement('span');
+		leftSpan.style.color = '#FFF';
+		leftSpan.textContent = "0";
+		leftSpan.style.marginLeft = "30px";
+
+		div.appendChild(leftSpan);
+		div.appendChild(rightSpan);
+		document.body.appendChild(div);
+
+		image = new Image();
+		image.src = 'panagora.png';
+
+		image.onload = function() {
+			var canvas = new canvasClass(image);
+			var particleArray = new particlesClass();
+			particleArray.drawparticles();
 		}
-		init();
 	}
 
 	parameterClass = function() {
+		// Tuning parameters should be added...
 		this.data;
-		timePara = {
+		this.time = {
 				currentTime : 0,
 				prevTime: +new Date(),
 				deltaTime: Number.MAX_VALUE,
 				frames: Number.MAX_VALUE,
-				divider: 0
+				counter: 0,
+				divider: 30,
+				framesPara: 30000
 			};
-		this.mousePara = {
+		this.mouse = {
 				x: 640,
 				y: 400,
 				down: false,
@@ -47,17 +55,16 @@
 	}
 
 	canvasClass = function(image) {
-
 		var canvas = document.createElement("canvas"),
 			mouseButtonEvent = function(e) {
-					parameters.mousePara.down = e.type === 'mousedown';  //xxx mouseDown = e.type === 'mousedown';
+					parameters.mouse.down = e.type === 'mousedown';
 				},
 			mouseMoveEvent = function(event) {
-					parameters.mousePara.x = event.clientX;
-					parameters.mousePara.y = event.clientY;
+					parameters.mouse.x = event.clientX - 10;
+					parameters.mouse.y = event.clientY - 30;
 				},
 			mouseEnter = function(e) {
-				parameters.mousePara.over = e.type === 'mouseover';
+				parameters.mouse.over = e.type === 'mouseover';
 				};
 		canvas.width = image.width;
 		canvas.height = image.height;
@@ -72,13 +79,15 @@
 		document.body.appendChild(canvas);
 	}
 
-	point = function(x, y) {
+	pointClass = function(x, y) {
+		var w = image.width,
+			h = image.height;
 		this.x = x;
 		this.y = y;
 		var setPixel = function(x, y, a) {
-			if( x < 0 || y < 0 || x > 1280 || y > 800 )
+			if( x < 0 || y < 0 || x > w || y > h )
 				return;
-			var pos = (Math.round(x) + 1280 * Math.round(y)) * 4;
+			var pos = (Math.round(x) + w * Math.round(y)) * 4;
 			data.data[pos] = a;
 			data.data[pos + 1] = a;
 			data.data[pos + 2] = a;
@@ -92,14 +101,12 @@
 		};
 	}
 
-	particle = function(x, y, dx, dy) {
-		// Private
-		var postition = new point(x,y),
-			speed = new point(dx,dy),
-			startPosition = new point(x,y),
-			frames = 20,
+	particleClass = function(x, y, dx, dy) {
+		var postition = new pointClass(x,y),
+			speed = new pointClass(dx,dy),
+			startPosition = new pointClass(x,y),
 			getAcceleration = function() {
-				return Math.atan2(postition.x - parameters.mousePara.x, postition.y - parameters.mousePara.y);
+				return Math.atan2(postition.x - parameters.mouse.x, postition.y - parameters.mouse.y);
 			},
 			setMouseOverSpeed = function() {
 				var dir = getAcceleration();
@@ -112,26 +119,26 @@
 			},
 			setButtonDownSpeed = function() {
 				var dir = getAcceleration(),
-					xDiff = postition.x - parameters.mousePara.x,
-					yDiff = postition.y - parameters.mousePara.y;
+					xDiff = postition.x - parameters.mouse.x,
+					yDiff = postition.y - parameters.mouse.y;
 
 				if (xDiff * xDiff + yDiff * yDiff < 1000) {
 					speed.x += -Math.sin(dir) * 8;
 					speed.y += -Math.cos(dir) * 8;
 				} else {
-					speed.x -= xDiff * frames / 400;
-					speed.y -= yDiff * frames / 400;
+					speed.x -= xDiff * parameters.time.frames / 400;
+					speed.y -= yDiff * parameters.time.frames / 400;
 				}
 			},
 			setSpeed = function() {
-				var xDiff = postition.x - parameters.mousePara.x,
-					yDiff = postition.y - parameters.mousePara.y;
-				if ( parameters.mousePara.down || !parameters.mousePara.over ) {
-					if (!parameters.mousePara.over)
+				var xDiff = postition.x - parameters.mouse.x,
+					yDiff = postition.y - parameters.mouse.y;
+				if ( parameters.mouse.down || !parameters.mouse.over ) {
+					if (!parameters.mouse.over)
 						setMouseOutSpeed();
-					else if (parameters.mousePara.down)
+					else if (parameters.mouse.down)
 						setButtonDownSpeed();
-					/// This is fucked up logic... move crap to point
+					// This is fucked up logic... move crap to pointClass
 					if (speed.x < 0 && xDiff > 0 || speed.x > 0 && xDiff < 0)
 						speed.x *= 0.8 - Math.random() / 10;
 
@@ -141,14 +148,13 @@
 					setMouseOverSpeed();
 			},
 			setPosition = function() {
-				postition.x += speed.x * 30 / frames;
-				postition.y += speed.y * 30 / frames;
+				postition.x += speed.x * 30 / parameters.time.frames;
+				postition.y += speed.y * 30 / parameters.time.frames;
 			},
 			nextStep = function() {
 				setSpeed();
 				setPosition();
 			}
-		// Public
 		this.drawparticle = function() {
 			postition.erasePoint();
 			nextStep();
@@ -156,7 +162,7 @@
 		}
 	}
 
-	particles = function() {
+	particlesClass = function() {
 		var particleArray = new Array(),
 			templateArray = new Array(),
 			getAlpha= function(x, y) {
@@ -164,10 +170,10 @@
 				return data.data[pos];
 			},
 			init = function() {
-				for (var x = 0; x < 1280; x++) {
-					for (var y = 0; y < 800; y++) {
+				for (var x = 0; x < image.width; x++) {
+					for (var y = 0; y < image.height; y++) {
 						if ( getAlpha(x, y) > 100 ) {
-							particleArray.push(new particle(x, y, Math.random(), Math.random()));
+							particleArray.push(new particleClass(x, y, Math.random(), Math.random()));
 						}
 					}
 				}
@@ -183,17 +189,21 @@
 				animate();
 				ctx.putImageData(data, 0, 0);
 				setTimeout( function() { render() }, 0 );
-				// if (divider % 30 === 0)
-				// {
-				// 	timerParam.currentTime = +new Date();
-				// 	timerParam.deltaTime = currentTime - prevTime;
-				// 	timerParam.frames = Math.round(30000/deltaTime);
-				// 	document.getElementById('fps').innerHTML = Math.round(30000 / deltaTime);
-				// 	timerParam.prevTime = currentTime;
-				// }
-				// divider++;
+				if (parameters.time.counter % parameters.time.divider === 0)
+				{
+					parameters.time.currentTime = +new Date();
+					parameters.time.deltaTime = parameters.time.currentTime - parameters.time.prevTime;
+					parameters.time.frames = Math.round(parameters.time.framesPara / parameters.time.deltaTime);
+					leftSpan.textContent = Math.round(parameters.time.framesPara / parameters.time.deltaTime);
+					parameters.time.prevTime = parameters.time.currentTime;
+				}
+				parameters.time.counter++;
 			}
 		}
 		init();
 	}
 </script>
+</head>
+<body>
+</body>
+</html>
